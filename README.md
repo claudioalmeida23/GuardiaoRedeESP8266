@@ -49,7 +49,7 @@ O arquivo principal está em `src/GuardiaoRede.ino`.
 
 ## 📜 Licença
 
-MIT License – veja arquivo [LICENSE](LICENSE).
+MIT License – veja arquivo (LICENSE).
 
 ---
 
