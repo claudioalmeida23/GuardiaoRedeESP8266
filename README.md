@@ -164,3 +164,4 @@ Criador do projeto Guardião de Rede – ESP8266
 
 
 (Seja Ético)
+No momento em que a vítima reconhece o ataque, todo ambiente deixa de ser seguro.
