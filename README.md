@@ -4,24 +4,29 @@ Autor: Claudio Almeida
 Plataforma: ESP8266
 Licença: MIT
 
-O Guardião de Rede – Stealth é um firmware experimental para ESP8266 projetado para monitoramento passivo de redes Wi-Fi, com foco na detecção de possíveis ataques do tipo Evil Twin, utilizando comparação de SSID + BSSID.
+O Guardião de Rede é um sistema de detecção de intrusão (IDS) de baixo custo, desenvolvido para a plataforma ESP8266. Ele foi criado com um objetivo claro: proteger usuários comuns contra ataques de redes falsas (Evil Twin).
 
-✅ O QUE ESTE CÓDIGO FAZ
-🔐 1. Configuração inicial via Access Point
+Muitas vezes, atacantes criam redes Wi-Fi com o mesmo nome da sua para roubar senhas. O Guardião monitora o ambiente 24h por dia e avisa você fisicamente (via som e luz) se uma rede "clone" aparecer.
 
-Cria um AP local chamado Guardiao_Config caso não exista configuração salva.
+✨ Principais Funcionalidades
+Detecção de Evil Twin: Identifica redes clonadas comparando o endereço físico (BSSID) do roteador real com os sinais encontrados no ar.
 
-Interface web simples para:
+Modo Stealth (Furtivo): O dispositivo opera de forma silenciosa, realizando varreduras aleatórias para não ser detectado pelo invasor.
 
-Inserir SSID
+Blindagem Reativa: Caso um ataque seja detectado, o dispositivo "tranca" suas próprias credenciais na memória para evitar extração de dados.
 
-Inserir senha
+Registro Forense: Salva o endereço MAC do invasor permanentemente na memória EEPROM para análise posterior.
 
-Após conectar com sucesso:
+Alerta Físico: Sistema de Beeps e LED para avisar o usuário imediatamente, sem a necessidade de telas ou computadores.
 
-Salva SSID e senha na EEPROM
+🚀  1. Como Funciona?
+O Guardião não confia apenas no nome da rede (SSID), mas sim na "impressão digital" do seu roteador (BSSID).
 
-Registra o BSSID legítimo do ponto de acesso conectado
+Configuração: Na primeira vez que ligar, ele cria uma rede chamada Guardiao_Config. Você conecta, digita o nome e a senha da sua rede.
+
+Aprendizado: Ele se conecta ao seu Wi-Fi e "anota" quem é o roteador legítimo.
+
+Vigilância: Ele entra em modo sentinela. Se alguém subir uma rede com o mesmo nome, mas o "RG" (MAC) for diferente, o alarme toca!
 
 💾 2. Armazenamento em EEPROM
 
@@ -45,65 +50,6 @@ SSID e senha são ofuscados com XOR simples antes de serem gravados.
 
 ⚠️ A ofuscação NÃO é criptografia forte, apenas dificulta leitura direta.
 
-🕵️ 3. Detecção de Evil Twin (Passiva)
-
-Executa scans periódicos de redes Wi-Fi.
-
-Se encontrar uma rede com:
-
-Mesmo SSID configurado
-
-BSSID diferente do legítimo
-
-O sistema considera como possível Evil Twin.
-
-Ações ao detectar:
-
-Registra o BSSID suspeito na EEPROM
-
-Aciona LED de alerta
-
-Emite sinais sonoros (buzzer)
-
-Executa uma reblindagem da EEPROM
-
-⏱️ 4. Scans com intervalo aleatório
-
-O tempo entre scans é randomizado:
-
-60s
-
-120s
-
-180s
-
-Isso evita padrões previsíveis de monitoramento.
-
-🚨 5. Alertas visuais e sonoros
-
-LED onboard indica:
-
-Conectado: pisca lento
-
-Alerta ou falha: LED aceso contínuo
-
-Buzzer emite:
-
-Alertas de falha de Wi-Fi
-
-Detecção de possível Evil Twin
-
-🧠 6. Reblindagem da EEPROM
-
-Ao detectar um Evil Twin:
-
-Os dados salvos são lidos
-
-Re-ofuscados
-
-Gravados novamente
-
-Objetivo: dificultar leitura direta após eventos suspeitos.
 
 ❌ O QUE ESTE CÓDIGO NÃO FAZ
 
@@ -158,4 +104,79 @@ Não envia dados para servidores
 Não possui dashboard remoto
 
 Logs são apenas via Serial Monitor
+
+🕵️ 3. Detecção de Evil Twin (Passiva)
+
+Executa scans periódicos de redes Wi-Fi.
+
+Se encontrar uma rede com:
+
+Mesmo SSID configurado
+
+BSSID diferente do legítimo
+
+O sistema considera como possível Evil Twin.
+
+Ações ao detectar:
+
+Registra o BSSID suspeito na EEPROM
+
+Aciona LED de alerta
+
+Emite sinais sonoros (buzzer)
+
+Executa uma reblindagem da EEPROM
+
+⏱️ 4. Scans com intervalo aleatório
+
+O tempo entre scans é randomizado:
+
+60s
+
+120s
+
+180s
+
+Isso evita padrões previsíveis de monitoramento.
+
+🚨 5. Alertas visuais e sonoros
+
+LED onboard indica:
+
+Conectado: pisca lento
+
+Alerta ou falha: LED aceso contínuo
+
+Buzzer emite:
+
+Alertas de falha de Wi-Fi
+
+Detecção de possível Evil Twin
+
+
+🛠️ Materiais Necessários
+1x ESP8266 (NodeMCU ou Wemos D1 Mini)
+
+1x Buzzer Ativo (Pino D8 / GPIO 14)
+
+1x LED (Embutido no pino D4 / GPIO 2)
+
+Cabo USB para alimentação
+
+💻 Instalação
+Abra o código na Arduino IDE.
+
+Instale as bibliotecas padrão do ESP8266.
+
+Carregue o código para o seu dispositivo.
+
+Abra o Monitor Serial (115200 baud) para acompanhar os primeiros logs.
+
+📜 Licença e Ética
+Este projeto é distribuído sob a licença MIT. Ele foi criado estritamente para fins defensivos e educacionais. O autor não se responsabiliza pelo uso indevido da ferramenta.
+
+Dica de Segurança: Mantenha seu Guardião escondido próximo ao seu roteador. Se ele apitar, desligue seu Wi-Fi e verifique se há dispositivos estranhos por perto.
+
+
+
 
