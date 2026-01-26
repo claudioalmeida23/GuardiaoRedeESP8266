@@ -1,167 +1,161 @@
-🛡️ Guardião de Rede – ESP8266
+🛡️ Guardião de Rede – Stealth (ESP8266)
 
-O Guardião de Rede é um projeto de monitoramento passivo de segurança Wi-Fi desenvolvido para o ESP8266.
-Ele atua como um sistema de alerta que avisa o usuário quando ocorre uma situação suspeita na rede, como a possível presença de um Evil Twin (ponto de acesso falso usando o mesmo nome da rede legítima).
+Autor: Claudio Almeida
+Plataforma: ESP8266
+Licença: MIT
 
-⚠️ Este projeto não protege ativamente a rede.
-Ele não bloqueia dispositivos, não reage a ataques e não interfere no tráfego.
-Seu papel é avisar, deixando a decisão e a ação nas mãos do usuário.
+O Guardião de Rede – Stealth é um firmware experimental para ESP8266 projetado para monitoramento passivo de redes Wi-Fi, com foco na detecção de possíveis ataques do tipo Evil Twin, utilizando comparação de SSID + BSSID.
 
-🎯 Objetivo do Projeto
+✅ O QUE ESTE CÓDIGO FAZ
+🔐 1. Configuração inicial via Access Point
 
-O Guardião de Rede foi criado para:
+Cria um AP local chamado Guardiao_Config caso não exista configuração salva.
 
-Monitorar continuamente a rede Wi-Fi conectada
+Interface web simples para:
 
-Detectar indícios simples de ataques do tipo Evil Twin
+Inserir SSID
 
-Alertar o usuário de forma sonora e visual
+Inserir senha
 
-Funcionar em hardware limitado, de forma estável e confiável
+Após conectar com sucesso:
 
-Ele foi pensado para ambientes domésticos e pequenos escritórios, como um alarme de rede.
+Salva SSID e senha na EEPROM
 
-🧠 Como o Guardião Funciona
+Registra o BSSID legítimo do ponto de acesso conectado
 
-O ESP8266 se conecta a uma rede Wi-Fi configurada pelo usuário.
+💾 2. Armazenamento em EEPROM
 
-Ele identifica o SSID e o BSSID (MAC do ponto de acesso legítimo).
+Usa EEPROM interna (512 bytes) para persistência de dados.
 
-Durante o funcionamento, o sistema monitora a rede.
+Armazena:
 
-Se for detectado:
+Flag de configuração válida
 
-O mesmo SSID
+SSID
 
-Com um BSSID diferente
+Senha
 
-O sistema interpreta isso como um possível Evil Twin e dispara um alerta.
+BSSID legítimo
 
-📌 O Guardião não confirma se o ataque é real.
-Ele apenas detecta a condição suspeita e avisa.
+Flag de invasor detectado
 
-🚨 Sistema de Alertas
+BSSID do possível invasor
 
-Quando uma anomalia é detectada, o Guardião responde com:
+SSID e senha são ofuscados com XOR simples antes de serem gravados.
 
-🔴 Alerta Visual
+⚠️ A ofuscação NÃO é criptografia forte, apenas dificulta leitura direta.
 
-LED onboard:
+🕵️ 3. Detecção de Evil Twin (Passiva)
 
-Piscando → funcionamento normal
+Executa scans periódicos de redes Wi-Fi.
 
-Aceso fixo → alerta ativo
+Se encontrar uma rede com:
 
-🔊 Alerta Sonoro
+Mesmo SSID configurado
 
-Buzzer:
+BSSID diferente do legítimo
 
-Emite sinal sonoro contínuo ou intermitente
+O sistema considera como possível Evil Twin.
 
-Funciona como aviso imediato local
+Ações ao detectar:
 
-🖥️ Logs
+Registra o BSSID suspeito na EEPROM
 
-Mensagens exibidas via Serial Monitor
+Aciona LED de alerta
 
-Informações úteis para diagnóstico e testes
+Emite sinais sonoros (buzzer)
 
-⚙️ Funcionalidades
+Executa uma reblindagem da EEPROM
 
-Conexão automática à rede Wi-Fi salva na EEPROM
+⏱️ 4. Scans com intervalo aleatório
 
-Modo de configuração via Access Point próprio
+O tempo entre scans é randomizado:
 
-Detecção básica de Evil Twin (SSID igual, BSSID diferente)
+60s
 
-Alertas sonoros e visuais em tempo real
+120s
 
-Persistência de configurações após reinicialização
+180s
 
-Funcionamento contínuo e simples
+Isso evita padrões previsíveis de monitoramento.
 
-🌐 Modo Configuração
+🚨 5. Alertas visuais e sonoros
 
-No primeiro uso ou caso falhe a conexão Wi-Fi:
+LED onboard indica:
 
-O ESP8266 cria um ponto de acesso:
+Conectado: pisca lento
 
-SSID: Guardiao_Config
+Alerta ou falha: LED aceso contínuo
 
-Senha: admin12345
+Buzzer emite:
 
-Uma página web simples permite:
+Alertas de falha de Wi-Fi
 
-Informar SSID da rede
+Detecção de possível Evil Twin
 
-Informar senha
+🧠 6. Reblindagem da EEPROM
 
-Após salvar, o dispositivo reinicia automaticamente
+Ao detectar um Evil Twin:
 
-🔌 Hardware Utilizado
+Os dados salvos são lidos
 
-ESP8266 (NodeMCU, Wemos D1 Mini, similares)
+Re-ofuscados
 
-LED onboard (GPIO2)
+Gravados novamente
 
-Buzzer simples (GPIO14 / D5)
+Objetivo: dificultar leitura direta após eventos suspeitos.
 
-📌 Nenhum hardware adicional complexo é necessário.
+❌ O QUE ESTE CÓDIGO NÃO FAZ
 
-❌ O Que Este Projeto NÃO Faz
+Este ponto é essencial para evitar interpretações erradas.
 
-Para evitar interpretações incorretas, o Guardião não:
+❌ NÃO bloqueia ataques
 
-Bloqueia invasores
+O ESP8266 não interfere, não desassocia clientes, não desliga redes.
 
-Desconecta dispositivos da rede
+Atua apenas como sensor de monitoramento.
 
-Executa ataques ou contra-ataques
+❌ NÃO invade redes
 
-Analisa pacotes de dados
+Não quebra senhas
 
-Substitui firewall, roteador ou IDS profissional
+Não força conexões
 
-Ele é um sistema de alerta, não um sistema de defesa ativa.
+Não executa brute-force
 
-⚡ Instalação
+Não captura handshakes
 
-Instale o Arduino IDE com suporte ao ESP8266
+❌ NÃO é um IDS/IPS profissional
 
-Abra o arquivo GuardiaoRede.ino
+Não substitui:
 
-Conecte o ESP8266 ao computador
+Firewalls
 
-Selecione a placa e a porta corretas
+Sistemas corporativos de segurança
 
-Compile e faça o upload
+WIDS/WIPS comerciais
 
-No primeiro boot, conecte-se ao Wi-Fi Guardiao_Config
+É um projeto educacional e experimental.
 
-Configure sua rede
+❌ NÃO usa criptografia forte
 
-O sistema inicia o monitoramento automaticamente
+A proteção da EEPROM é apenas ofuscação XOR
 
-🧩 Estrutura do Projeto
+Não há AES, RSA, TLS ou similares
 
-src/GuardiaoRede.ino → Código principal
+Não protege contra acesso físico ao chip
 
-README.md → Documentação
+❌ NÃO garante que todo SSID duplicado seja ataque
 
-LICENSE → Licença do projeto
+Redes com mesmo SSID podem existir legitimamente
 
-📜 Licença
+A detecção é baseada em heurística simples (SSID + BSSID)
 
-Este projeto é distribuído sob a Licença MIT.
-Você é livre para usar, modificar e distribuir, desde que mantenha os créditos ao autor.
+❌ NÃO registra logs externos
 
-Veja o arquivo LICENSE para mais detalhes.
+Não envia dados para servidores
 
-👤 Autor
+Não possui dashboard remoto
 
-Claudio Almeida
-Criador do projeto Guardião de Rede – ESP8266
-
-
-(Seja Ético)
+Logs são apenas via Serial Monitor
 
