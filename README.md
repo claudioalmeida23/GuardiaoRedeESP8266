@@ -189,3 +189,6 @@ Se o alerta disparar:
 - Desligue o Wi-Fi
 - Verifique redes suspeitas
 - Reconfigure seu roteador se necessário
+  
+
+Antes de explorar uma falha, pense em quem está do outro lado.
