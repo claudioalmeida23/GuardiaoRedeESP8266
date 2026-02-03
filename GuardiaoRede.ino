@@ -8,11 +8,10 @@
 | $$  | $$| $$  | $$|  $$$$$$$| $$      |  $$$$$$/| $$ \  $$
 |__/  |__/|__/  |__/ \_______/|__/       \______/ |__/  \__/
 
- 🛡️ Guardião de Rede – Stealth
- Criador: Claudio Almeida
- Plataforma: ESP8266
- GitHub: https://github.com/claudioalmeida23
- Licença: MIT
+  🛡️ Guardião de Rede – Stealth
+  Criador: Claudio Almeida
+  Plataforma: ESP8266
+  Licença: MIT
 */
 
 #include <ESP8266WiFi.h>
@@ -20,13 +19,8 @@
 #include <EEPROM.h>
 
 /* ===== PINOS ===== */
-#define LED_ALERTA 2
-#define PINO_BEEP 14
+#define LED_ALERTA 2          // LED onboard (ativo em LOW)
 #define EEPROM_SIZE 512
-
-/* ===== EEPROM MAP ===== */
-#define EEPROM_FLAG_INVASOR   90
-#define EEPROM_BSSID_INVASOR  91  // 6 bytes
 
 ESP8266WebServer server(80);
 
@@ -41,10 +35,10 @@ bool evilDetectado = false;
 
 unsigned long ultimoPisca = 0;
 unsigned long ultimoScan  = 0;
-unsigned long intervaloScan = 60000; // será randomizado
+unsigned long intervaloScan = 60000;
 bool estadoLed = false;
 
-/* ===== XOR SIMPLES ===== */
+/* ===== XOR ===== */
 void obf(char* b, int l) {
   for (int i = 0; i < l; i++) {
     if (!b[i]) break;
@@ -58,7 +52,7 @@ void logar(const char* m) {
   Serial.println(m);
 }
 
-/* ===== EEPROM CONFIG ===== */
+/* ===== EEPROM ===== */
 bool temConfig() {
   EEPROM.begin(EEPROM_SIZE);
   if (EEPROM.read(0) != 1) {
@@ -96,40 +90,6 @@ void salvarConfig(bool aplicarXor) {
   EEPROM.end();
 }
 
-/* ===== INVASOR ===== */
-void salvarInvasor(uint8_t *bssid) {
-  EEPROM.begin(EEPROM_SIZE);
-  EEPROM.write(EEPROM_FLAG_INVASOR, 1);
-  EEPROM.put(EEPROM_BSSID_INVASOR, bssid);
-  EEPROM.commit();
-  EEPROM.end();
-
-  Serial.printf(
-    "[GUARDIAO] INVASOR REGISTRADO: %02X:%02X:%02X:%02X:%02X:%02X\n",
-    bssid[0], bssid[1], bssid[2],
-    bssid[3], bssid[4], bssid[5]
-  );
-}
-
-bool invasorJaRegistrado(uint8_t *bssid) {
-  uint8_t salvo[6];
-  EEPROM.begin(EEPROM_SIZE);
-  bool existe = EEPROM.read(EEPROM_FLAG_INVASOR) == 1;
-  if (existe) EEPROM.get(EEPROM_BSSID_INVASOR, salvo);
-  EEPROM.end();
-  return existe && memcmp(bssid, salvo, 6) == 0;
-}
-
-/* ===== BEEP ===== */
-void beep(int n, int t = 150) {
-  for (int i = 0; i < n; i++) {
-    digitalWrite(PINO_BEEP, HIGH);
-    delay(t);
-    digitalWrite(PINO_BEEP, LOW);
-    delay(t);
-  }
-}
-
 /* ===== AP CONFIG ===== */
 void iniciarAPConfig() {
   modoConfig = true;
@@ -139,7 +99,7 @@ void iniciarAPConfig() {
   WiFi.mode(WIFI_AP);
   WiFi.softAP("Guardiao_Config", "admin12345");
 
-  logar("MODO CONFIGURACAO ATIVO");
+  logar("MODO CONFIG ATIVO");
   digitalWrite(LED_ALERTA, LOW);
 
   server.on("/", []() {
@@ -173,33 +133,12 @@ void iniciarAPConfig() {
     salvarConfig(true);
 
     server.send(200, "text/html",
-      "<h3>Configuração salva</h3><p>Reiniciando...</p>");
+      "<h3>Config salva</h3><p>Reiniciando...</p>");
     delay(1500);
     ESP.restart();
   });
 
   server.begin();
-}
-
-/* ===== BLINDAGEM ===== */
-void blindarEEPROM() {
-  char s[32], p[32];
-
-  EEPROM.begin(EEPROM_SIZE);
-  EEPROM.get(4, s);
-  EEPROM.get(36, p);
-  EEPROM.end();
-
-  obf(s, 32); obf(p, 32);
-  obf(s, 32); obf(p, 32);
-
-  EEPROM.begin(EEPROM_SIZE);
-  EEPROM.put(4, s);
-  EEPROM.put(36, p);
-  EEPROM.commit();
-  EEPROM.end();
-
-  logar("EEPROM REBLINDADA");
 }
 
 /* ===== EVIL TWIN ===== */
@@ -209,26 +148,10 @@ void detectarEvilTwin() {
   for (int i = 0; i < n; i++) {
     if (WiFi.SSID(i) == String(ssid)) {
       if (memcmp(WiFi.BSSID(i), bssidLegitimo, 6) != 0) {
-
-        uint8_t *bssidInvasor = WiFi.BSSID(i);
-
-        Serial.printf(
-          "[GUARDIAO] EVIL TWIN | BSSID %02X:%02X:%02X:%02X:%02X:%02X | CH %d | RSSI %d\n",
-          bssidInvasor[0], bssidInvasor[1], bssidInvasor[2],
-          bssidInvasor[3], bssidInvasor[4], bssidInvasor[5],
-          WiFi.channel(i), WiFi.RSSI(i)
-        );
-
-        if (!invasorJaRegistrado(bssidInvasor)) {
-          salvarInvasor(bssidInvasor);
-        }
-
         if (!evilDetectado) {
           evilDetectado = true;
           digitalWrite(LED_ALERTA, LOW);
           logar("EVIL TWIN DETECTADO");
-          beep(3, 120);
-          blindarEEPROM();
         }
       }
     }
@@ -241,11 +164,9 @@ void setup() {
   Serial.begin(115200);
 
   pinMode(LED_ALERTA, OUTPUT);
-  pinMode(PINO_BEEP, OUTPUT);
   digitalWrite(LED_ALERTA, HIGH);
-  digitalWrite(PINO_BEEP, LOW);
 
-  logar("BOOT DO GUARDIAO");
+  logar("BOOT");
 
   if (!temConfig()) {
     iniciarAPConfig();
@@ -266,13 +187,10 @@ void setup() {
   }
 
   randomSeed(ESP.getCycleCount());
-
   int tempos[] = {60000, 120000, 180000};
   intervaloScan = tempos[random(0, 3)];
 
-  Serial.printf("[GUARDIAO] SCAN ALEATORIO ARMADO: %lu ms\n", intervaloScan);
-
-  logar("CONECTADO COM SUCESSO");
+  logar("CONECTADO");
 }
 
 /* ===== LOOP ===== */
@@ -296,18 +214,13 @@ void loop() {
     wifiFalha = true;
     digitalWrite(LED_ALERTA, LOW);
     logar("WIFI PERDIDO");
-    beep(4);
   }
 
   if (WiFi.status() == WL_CONNECTED && millis() - ultimoScan >= intervaloScan) {
     ultimoScan = millis();
-
-    Serial.printf("[GUARDIAO] INICIANDO SCAN (%lu ms)\n", intervaloScan);
     detectarEvilTwin();
 
     int tempos[] = {60000, 120000, 180000};
     intervaloScan = tempos[random(0, 3)];
-
-    Serial.printf("[GUARDIAO] PROXIMO SCAN EM %lu ms\n", intervaloScan);
   }
 }
