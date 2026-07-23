@@ -1,0 +1,97 @@
+# ==========================================
+# Arduino / ESP8266 / ESP32
+# ==========================================
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.bak
+*.old
+*.log
+*.cache
+
+# Compilação
+*.o
+*.obj
+*.elf
+*.bin
+*.hex
+*.map
+*.eep
+*.lst
+*.d
+
+# Diretórios de build
+build/
+Build/
+Debug/
+Release/
+out/
+
+# Arduino CLI
+.sketch/
+
+# Arduino IDE
+*.ino.cpp
+*.ino.cpp.d
+*.ino.elf
+*.ino.bin
+
+# VS Code
+.vscode/
+.history/
+
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+.platformio/
+
+# CLion
+.idea/
+cmake-build-*/
+
+# Eclipse
+.settings/
+.project
+.cproject
+
+# Visual Studio
+.vs/
+
+# Sistema Operacional
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Credenciais locais
+.env
+.env.*
+secrets.h
+wifi.h
+config_local.h
+credentials.h
+tokens.h
+
+# Chaves e certificados
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# Backups
+backup/
+backups/
+*.zip
+*.rar
+*.7z
+
+# Arquivos de teste
+test/
+tests/tmp/
